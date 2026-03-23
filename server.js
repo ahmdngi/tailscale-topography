@@ -6,9 +6,11 @@ const { promisify } = require("util");
 
 const execFileAsync = promisify(execFile);
 const publicDir = path.join(__dirname, "public");
-const host = process.env.HOST || "127.0.0.1";
+const host = process.env.HOST || "0.0.0.0";
 const port = Number(process.env.PORT || 4180);
 const statusTimeoutMs = Number(process.env.TAILSCALE_TIMEOUT_MS || 12000);
+const tailscaleBin = process.env.TAILSCALE_BIN || "tailscale";
+const tailscaleSocket = process.env.TAILSCALE_SOCKET || "";
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -149,7 +151,13 @@ function buildTopography(status) {
 }
 
 async function readStatus() {
-  const { stdout } = await execFileAsync("tailscale", ["status", "--json"], {
+  const args = [];
+  if (tailscaleSocket) {
+    args.push("--socket", tailscaleSocket);
+  }
+  args.push("status", "--json");
+
+  const { stdout } = await execFileAsync(tailscaleBin, args, {
     timeout: statusTimeoutMs,
     maxBuffer: 2 * 1024 * 1024,
   });

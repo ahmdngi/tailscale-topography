@@ -29,17 +29,15 @@ cd tailscale-topography
 node server.js
 ```
 
-Then open:
-
-```text
-http://127.0.0.1:4180
-```
+Then open `http://127.0.0.1:4180`.
 
 Environment variables:
 
-- `HOST` - bind address, default `127.0.0.1`
+- `HOST` - bind address, default `0.0.0.0`
 - `PORT` - listen port, default `4180`
 - `TAILSCALE_TIMEOUT_MS` - CLI timeout in milliseconds, default `12000`
+- `TAILSCALE_BIN` - path to the `tailscale` binary, default `tailscale`
+- `TAILSCALE_SOCKET` - optional path to the `tailscaled` socket
 
 ## NixOS / nix-shell
 
@@ -88,6 +86,31 @@ For safer exposure, keep this app bound to `127.0.0.1` and publish it with Tails
 ```sh
 sudo tailscale serve http://127.0.0.1:4180
 ```
+
+## Docker
+
+This repo now includes a `Dockerfile` and `docker-compose.yml`.
+
+The container does not run its own Tailscale daemon. Instead, it uses the host's existing `tailscaled` instance by mounting the host socket at `/var/run/tailscale/tailscaled.sock`.
+
+Start it with:
+
+```sh
+docker compose up -d --build
+```
+
+Then reach it from any device in the same tailnet using the host's Tailscale IP or MagicDNS name, for example:
+
+```text
+http://100.x.y.z:4180
+http://your-hostname.your-tailnet.ts.net:4180
+```
+
+Notes:
+
+- The host machine must already be connected to Tailscale.
+- `docker-compose.yml` publishes port `4180` on the host and the app binds to `0.0.0.0`, so it is reachable through the host's Tailscale interface.
+- If you only want tailnet exposure and not general LAN exposure, bind the app to `127.0.0.1` and publish it with `tailscale serve` on the host instead.
 
 ## Notes
 

@@ -1,0 +1,13 @@
+services:
+  tailscale-topography:
+    build: .
+    container_name: tailscale-topography
+    restart: unless-stopped
+    ports:
+      - "4180:4180"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 4180
+      TAILSCALE_SOCKET: /var/run/tailscale/tailscaled.sock
+    volumes:
+      - /var/run/tailscale:/var/run/tailscale:ro
